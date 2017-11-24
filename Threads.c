@@ -7,13 +7,13 @@ int row;
 int column;
 };
 
-int** a;
-int** b;
-int result[100][100];
+double** a;
+double** b;
+double result[100][100];
 int temp1;
 int temp2;
 int arows,acolumns,brows,bcolumns;
-int** readFile(char* file){
+double** readFile(char* file){
     int rows=0;
     int flag = 0;
     int columns=0;
@@ -35,7 +35,6 @@ int** readFile(char* file){
             }
         }
         columns++;
-        //rows++;
     }
 
     else
@@ -45,20 +44,19 @@ int** readFile(char* file){
         columns=-1;
     }
     fseek(f,0,SEEK_SET);
-    //printf("rows=%d\ncolumns= %d\n",rows,columns);
     int i,j,k;
     temp1 = rows;
     temp2 = columns;
-    int** arr = (int**) malloc(10000*sizeof(int*));
-    for (i = 0; i < 10000; ++i)
-        arr[i] = (int*) malloc(columns*sizeof(int));
+    double** arr = (double**) malloc(rows*sizeof(double*));
+    for (i = 0; i < rows; ++i)
+        arr[i] = (double*) malloc(columns*sizeof(double));
 
     /**read matrix and save it in arr**/
     for(i=0; i<rows; i++)
     {
         for(j=0; j<columns; j++)
         {
-            fscanf(f,"%d",&arr[i][j]);
+            fscanf(f,"%lf",&arr[i][j]);
         }
     }
 
@@ -75,7 +73,7 @@ void WriteMatrix(char *file)
     {
         for(j=0;j<bcolumns;j++)
         {
-            fprintf(f,"%d  ",result[i][j]);
+            fprintf(f,"%lf  ",result[i][j]);
         }
         fprintf(f,"\n");
     }
@@ -83,14 +81,14 @@ void WriteMatrix(char *file)
 }
 
 
-void PrintMatrix(int matrix[][100],int rows,int columns)
+void PrintMatrix(double matrix[][100],int rows,int columns)
 {
     int i,j;
     for(i=0; i<rows; i++)
        {
             for(j=0; j<columns; j++)
             {
-                printf("%d ",matrix[i][j]);
+                printf("%lf ",matrix[i][j]);
             }
             printf("\n");
        }
@@ -99,17 +97,18 @@ void PrintMatrix(int matrix[][100],int rows,int columns)
 
 void* MatrixMulbyrow(void* arg)
 {
-	int i= *(int*)arg;
+        struct dimensions *d=arg;
+	//int i= *(int*)arg;
 	int j;
 	int k;
-	int sum=0;
+	double sum=0;
 	for(j=0; j<bcolumns; j++)
 	{
 		for(k=0; k<acolumns; k++)
 		{
-			sum=+(a[i][k]*b[k][j]);
+			sum=+(a[d->row][k]*b[k][d->column]);
 		}
-		result[i][j]=sum;
+		result[d->row][d->column]=sum;	
 		sum=0;
 	}
 	pthread_exit(0);
@@ -119,7 +118,7 @@ void* MatrixMulbyelement(void* arg)
 {
 	struct dimensions *d=arg;
 	int k;
-	int sum=0;
+	double sum=0;
 	for(k=0; k<acolumns; k++)
 	{
 		sum+=(a[d->row][k]*b[k][d->column]);
@@ -154,7 +153,7 @@ void matrMul(){
 
 }
 void threadedMatrixMulByElement(){
-    int counter=0,i,j;
+        int counter=0,i,j;
 	pthread_t thread2[arows][bcolumns];
 	struct dimensions* d;
 	
@@ -181,7 +180,7 @@ void threadedMatrixMulByElement(){
 }
 void threadedMatrixMulByRow()
 {
-    int counter=0;
+        int counter=0;
 	pthread_t thread[arows];
 	int tid[arows],i;
 	for(i=0; i<arows; i++)
@@ -209,7 +208,7 @@ int main()
     a = readFile(file);
     arows = temp1;
     acolumns = temp2;
- printf("\nEnter The Name Of The Second File: ");
+    printf("\nEnter The Name Of The Second File: ");
     scanf("%s",file2);
     b= readFile(file2);
     brows = temp1;
